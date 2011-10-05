@@ -24,15 +24,13 @@ public class ViewHelper {
 	private final InputTool input;
 	private final SelectTool select;
 	private final FormTool form;
-	private final HelloTool hello;
 
 	@Inject
-	public ViewHelper(LinkTool link, FormTool form, InputTool input, SelectTool select, HelloTool hello) {
+	public ViewHelper(LinkTool link, FormTool form, InputTool input, SelectTool select) {
 		this.link = link;
 		this.form = form;
 		this.input = input;
 		this.select = select;
-		this.hello = hello;
 	}
 
 	public LinkTool getLink() {
@@ -49,9 +47,5 @@ public class ViewHelper {
 
 	public FormTool getForm() {
 		return form;
-	}
-
-	public HelloTool getHello() {
-		return hello;
 	}
 }
