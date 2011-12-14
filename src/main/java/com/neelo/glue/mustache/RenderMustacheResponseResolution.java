@@ -24,10 +24,12 @@ import com.sampullara.util.FutureWriter;
 @Singleton
 public class RenderMustacheResponseResolution implements ResponseResolution {
 	private final Provider<MustacheBuilder> templateProvider;
+	private final Helper helper;
 
 	@Inject
-	public RenderMustacheResponseResolution(Provider<MustacheBuilder> templateProvider) {
+	public RenderMustacheResponseResolution(Provider<MustacheBuilder> templateProvider, Helper helper) {
 		this.templateProvider = templateProvider;
+		this.helper = helper;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -79,6 +81,7 @@ public class RenderMustacheResponseResolution implements ResponseResolution {
 
 			data.put("_contextPath", req.getContextPath());
 			data.put("_this", lifecycle.getBean());
+			data.put("_link", helper.getLink());
 
 			Scope scope = new CustomScope(data);
 
