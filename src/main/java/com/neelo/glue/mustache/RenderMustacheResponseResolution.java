@@ -1,4 +1,4 @@
-package com.neelo.glue.resolve.response;
+package com.neelo.glue.mustache;
 
 import java.io.PrintWriter;
 import java.util.Map;
@@ -6,28 +6,28 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.antlr.stringtemplate.NoIndentWriter;
-import org.antlr.stringtemplate.StringTemplate;
-import org.antlr.stringtemplate.StringTemplateGroup;
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.neelo.glue.GlueException;
 import com.neelo.glue.Lifecycle;
 import com.neelo.glue.resolve.Route;
-import com.neelo.glue.st.ViewHelper;
+import com.neelo.glue.resolve.response.ResponseResolution;
+import com.sampullara.mustache.Mustache;
+import com.sampullara.mustache.MustacheBuilder;
+import com.sampullara.mustache.Scope;
+import com.sampullara.util.FutureWriter;
 
 @Singleton
-public class RenderSTResponseResolution implements ResponseResolution {
-	private final Provider<StringTemplateGroup> templateProvider;
-	private final ViewHelper helper;
+public class RenderMustacheResponseResolution implements ResponseResolution {
+	private final Provider<MustacheBuilder> templateProvider;
 
 	@Inject
-	public RenderSTResponseResolution(Provider<StringTemplateGroup> templateProvider, ViewHelper helper) {
+	public RenderMustacheResponseResolution(Provider<MustacheBuilder> templateProvider) {
 		this.templateProvider = templateProvider;
-		this.helper = helper;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -42,7 +42,7 @@ public class RenderSTResponseResolution implements ResponseResolution {
 			if (StringUtils.isNotBlank(lifecycle.getRequestResolution().getRoute().getContent()))
 				resp.setContentType(lifecycle.getRequestResolution().getRoute().getContent());
 
-			StringTemplateGroup stg = templateProvider.get();
+			MustacheBuilder builder = templateProvider.get();
 
 			Route route = lifecycle.getRequestResolution().getRoute();
 			String base = route.getResourcePath();
@@ -67,23 +67,25 @@ public class RenderSTResponseResolution implements ResponseResolution {
 				}
 			}
 
-			StringTemplate layout = stg.getInstanceOf(route.getLayout());
-			StringTemplate page = stg.getInstanceOf(base + "/" + action);
+			Mustache page = builder.parseFile(base + "/" + action + ".must");
+
+			Map<String, Object> data = Maps.newHashMap();
 
 			if (result instanceof Map) {
-				layout.setAttributes((Map) result);
+				data.putAll((Map) result);
 			} else {
-				layout.setAttribute("_return", result);
+				data.put("_return", result);
 			}
 
-			layout.setAttribute("_helper", helper);
-			layout.setAttribute("_contextPath", req.getContextPath());
-			layout.setAttribute("_this", lifecycle.getBean());
-			layout.setAttribute("_page", page);
+			data.put("_contextPath", req.getContextPath());
+			data.put("_this", lifecycle.getBean());
 
-			PrintWriter writer = resp.getWriter();
-			NoIndentWriter stw = new NoIndentWriter(writer);
-			layout.write(stw);
+			Scope scope = new CustomScope(data);
+
+			PrintWriter sw = resp.getWriter();
+			FutureWriter writer = new FutureWriter(sw);
+
+			page.execute(writer, scope);
 			writer.flush();
 			writer.close();
 		} catch (Exception e) {
