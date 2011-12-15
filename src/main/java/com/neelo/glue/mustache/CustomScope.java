@@ -12,6 +12,9 @@ public class CustomScope extends Scope {
 	public static void register(Class<?> klass, Renderer renderer) {
 		renderers.put(klass, renderer);
 	}
+	
+	public CustomScope() {
+	}
 
 	public CustomScope(Map<String, Object> data) {
 		super(data);

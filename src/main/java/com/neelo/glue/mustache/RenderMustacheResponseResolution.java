@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -23,12 +22,15 @@ import com.sampullara.util.FutureWriter;
 
 @Singleton
 public class RenderMustacheResponseResolution implements ResponseResolution {
-	private final Provider<MustacheBuilder> templateProvider;
+	private final Provider<MustacheBuilder> mustacheBuilderProvider;
+	private final Provider<Scope> scopeProvider;
 	private final Helper helper;
 
 	@Inject
-	public RenderMustacheResponseResolution(Provider<MustacheBuilder> templateProvider, Helper helper) {
-		this.templateProvider = templateProvider;
+	public RenderMustacheResponseResolution(Provider<MustacheBuilder> mustacheBuilderProvider,
+			Provider<Scope> scopeProvider, Helper helper) {
+		this.mustacheBuilderProvider = mustacheBuilderProvider;
+		this.scopeProvider = scopeProvider;
 		this.helper = helper;
 	}
 
@@ -44,7 +46,7 @@ public class RenderMustacheResponseResolution implements ResponseResolution {
 			if (StringUtils.isNotBlank(lifecycle.getRequestResolution().getRoute().getContent()))
 				resp.setContentType(lifecycle.getRequestResolution().getRoute().getContent());
 
-			MustacheBuilder builder = templateProvider.get();
+			MustacheBuilder builder = mustacheBuilderProvider.get();
 
 			Route route = lifecycle.getRequestResolution().getRoute();
 			String base = route.getResourcePath();
@@ -71,25 +73,20 @@ public class RenderMustacheResponseResolution implements ResponseResolution {
 
 			Mustache page = builder.parseFile(base + "/" + action + ".must");
 
-			Map<String, Object> data = Maps.newHashMap();
-
+			Scope scope = scopeProvider.get();
 			if (result instanceof Map) {
-				data.putAll((Map) result);
+				scope.putAll((Map) result);
 			} else {
-				data.put("_return", result);
+				scope.put("return", result);
 			}
-
-			data.put("_contextPath", req.getContextPath());
-			data.put("_this", lifecycle.getBean());
-			data.put("_link", helper.getLink());
-
-			Scope scope = new CustomScope(data);
+			scope.put("contextPath", req.getContextPath());
+			scope.put("this", lifecycle.getBean());
+			scope.put("link", helper.getLink());
 
 			PrintWriter sw = resp.getWriter();
 			FutureWriter writer = new FutureWriter(sw);
 
 			page.execute(writer, scope);
-			writer.flush();
 			writer.close();
 		} catch (Exception e) {
 			throw new GlueException(e);
