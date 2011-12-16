@@ -20,21 +20,17 @@ import com.sampullara.mustache.Scope;
 public class ExecuteFunction implements Function<String, StringWriter> {
 	private final Provider<MustacheBuilder> mustacheBuilderProvider;
 	private final Provider<Scope> scopeProvider;
-	private final Helper helper;
 
 	@Inject
-	public ExecuteFunction(Provider<MustacheBuilder> mustacheBuilderProvider, Provider<Scope> scopeProvider,
-			Helper helper) {
+	public ExecuteFunction(Provider<MustacheBuilder> mustacheBuilderProvider, Provider<Scope> scopeProvider) {
 		this.mustacheBuilderProvider = mustacheBuilderProvider;
 		this.scopeProvider = scopeProvider;
-		this.helper = helper;
 	}
 
 	public StringWriter apply(String input) {
 		ObjectMapper om = new ObjectMapper();
 		Scope temp = new CustomScope();
 		temp.put("execute", this);
-		temp.put("link", helper.getLink());
 
 		try {
 			TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {

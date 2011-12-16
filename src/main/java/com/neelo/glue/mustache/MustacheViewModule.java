@@ -18,6 +18,13 @@ import com.sampullara.mustache.Scope;
 public class MustacheViewModule extends AbstractModule {
 	private final Logger log = LoggerFactory.getLogger(MustacheViewModule.class);
 
+	public MustacheViewModule() {
+		CustomScope.register(java.util.Date.class, new DateRenderer());
+		CustomScope.register(java.sql.Date.class, new DateRenderer());
+		CustomScope.register(java.sql.Timestamp.class, new DateRenderer());
+		CustomScope.register(String.class, new StringRenderer());
+	}
+
 	@Override
 	protected void configure() {
 		bind(ExecuteFunction.class);
@@ -26,7 +33,7 @@ public class MustacheViewModule extends AbstractModule {
 	@Inject
 	@Provides
 	@Singleton
-	public MustacheBuilder get(ServletContext context) {
+	protected MustacheBuilder get(ServletContext context) {
 		String root = context.getRealPath("/");
 		log.info("Initializing Mustache with root " + root);
 		MustacheBuilder builder = new MustacheBuilder(new File(root + "/WEB-INF/mustache"));
@@ -36,11 +43,15 @@ public class MustacheViewModule extends AbstractModule {
 	@Inject
 	@Provides
 	@RequestScoped
-	public Scope get(Helper helper, ExecuteFunction execute) {
+	protected Scope get(Helper helper) {
 		Scope scope = new CustomScope();
 		scope.put("link", helper.getLink());
-		scope.put("execute", execute);
+		scope.put("execute", helper.getExecute());
 
+		return populate(scope);
+	}
+
+	protected Scope populate(Scope scope) {
 		return scope;
 	}
 }

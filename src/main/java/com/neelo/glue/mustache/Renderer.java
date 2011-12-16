@@ -1,5 +1,5 @@
 package com.neelo.glue.mustache;
 
-public interface Renderer<E> {
-	public String stringify(E o, String format);
+public interface Renderer {
+	public String stringify(Object o, String format);
 }

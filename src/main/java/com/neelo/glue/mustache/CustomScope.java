@@ -5,14 +5,14 @@ import java.util.Map;
 
 import com.sampullara.mustache.Scope;
 
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({ "rawtypes" })
 public class CustomScope extends Scope {
 	private static Map<Class, Renderer> renderers = new HashMap<Class, Renderer>();
 
 	public static void register(Class<?> klass, Renderer renderer) {
 		renderers.put(klass, renderer);
 	}
-	
+
 	public CustomScope() {
 	}
 
@@ -31,7 +31,7 @@ public class CustomScope extends Scope {
 
 		if (options.length > 1)
 			return format(value, options[1].replace("\"", "").trim());
-		
+
 		return value;
 	}
 

@@ -24,14 +24,12 @@ import com.sampullara.util.FutureWriter;
 public class RenderMustacheResponseResolution implements ResponseResolution {
 	private final Provider<MustacheBuilder> mustacheBuilderProvider;
 	private final Provider<Scope> scopeProvider;
-	private final Helper helper;
 
 	@Inject
 	public RenderMustacheResponseResolution(Provider<MustacheBuilder> mustacheBuilderProvider,
-			Provider<Scope> scopeProvider, Helper helper) {
+			Provider<Scope> scopeProvider) {
 		this.mustacheBuilderProvider = mustacheBuilderProvider;
 		this.scopeProvider = scopeProvider;
-		this.helper = helper;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -81,7 +79,6 @@ public class RenderMustacheResponseResolution implements ResponseResolution {
 			}
 			scope.put("contextPath", req.getContextPath());
 			scope.put("this", lifecycle.getBean());
-			scope.put("link", helper.getLink());
 
 			PrintWriter sw = resp.getWriter();
 			FutureWriter writer = new FutureWriter(sw);
