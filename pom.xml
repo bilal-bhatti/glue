@@ -132,7 +132,7 @@
 		<dependency>
 			<groupId>com.github.spullara.mustache.java</groupId>
 			<artifactId>builder</artifactId>
-			<version>0.6.2</version>
+			<version>0.6.3-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

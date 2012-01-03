@@ -1,15 +1,13 @@
 package com.neelo.glue.mustache;
 
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import com.google.common.base.Function;
 import com.sampullara.mustache.Mustache;
@@ -28,21 +26,18 @@ public class ExecuteFunction implements Function<String, StringWriter> {
 	}
 
 	public StringWriter apply(String input) {
-		ObjectMapper om = new ObjectMapper();
 		Scope temp = new CustomScope();
 		temp.put("execute", this);
 
 		try {
-			TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
-			};
-			HashMap<String, Object> o = om.readValue(input, typeRef);
+			JSONObject json = (JSONObject) new JSONParser().parse(input);
 			Scope scope = scopeProvider.get();
-			for (Map.Entry<String, Object> entry : o.entrySet()) {
-				if (!"file".equals(entry.getKey())) {
-					temp.put(entry.getKey(), scope.get(entry.getValue()));
+			for (Object key : json.keySet()) {
+				if (!"file".equals(key)) {
+					temp.put(key, scope.get(json.get(key)));
 				}
 			}
-			Mustache sub = mustacheBuilderProvider.get().parseFile((String) o.get("file"));
+			Mustache sub = mustacheBuilderProvider.get().parseFile((String) json.get("file"));
 			StringWriter sw = new StringWriter();
 			sub.execute(sw, temp);
 			return sw;
