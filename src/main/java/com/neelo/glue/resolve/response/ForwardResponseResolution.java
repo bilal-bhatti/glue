@@ -12,15 +12,15 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neelo.glue.GlueException;
 import com.neelo.glue.Lifecycle;
-import com.neelo.glue.st.ViewHelper;
+import com.neelo.glue.util.LinkBuilder;
 
 @Singleton
 public class ForwardResponseResolution implements ResponseResolution {
-	private final ViewHelper helper;
+	private final LinkBuilder linkBuilder;
 
 	@Inject
-	public ForwardResponseResolution(ViewHelper helper) {
-		this.helper = helper;
+	public ForwardResponseResolution(LinkBuilder linkBuilder) {
+		this.linkBuilder = linkBuilder;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -35,7 +35,7 @@ public class ForwardResponseResolution implements ResponseResolution {
 	@SuppressWarnings("unchecked")
 	private void forward(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> params)
 			throws ServletException, IOException {
-		StringBuilder url = helper.getLink().link((Map<String, Object>) params.get(forward));
+		StringBuilder url = linkBuilder.link((Map<String, Object>) params.get(forward));
 		RequestDispatcher dispatcher = request.getRequestDispatcher(url.toString());
 		dispatcher.forward(request, response);
 	}
