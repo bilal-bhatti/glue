@@ -26,7 +26,7 @@ public class ExecuteFunction implements Function<String, StringWriter> {
 	}
 
 	public StringWriter apply(String input) {
-		Scope temp = new CustomScope();
+		Scope temp = new Scope();
 		temp.put("execute", this);
 
 		try {

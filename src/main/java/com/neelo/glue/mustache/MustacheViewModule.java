@@ -19,10 +19,6 @@ public class MustacheViewModule extends AbstractModule {
 	private final Logger log = LoggerFactory.getLogger(MustacheViewModule.class);
 
 	public MustacheViewModule() {
-		CustomScope.register(java.util.Date.class, new DateRenderer());
-		CustomScope.register(java.sql.Date.class, new DateRenderer());
-		CustomScope.register(java.sql.Timestamp.class, new DateRenderer());
-		CustomScope.register(String.class, new StringRenderer());
 	}
 
 	@Override
@@ -44,7 +40,7 @@ public class MustacheViewModule extends AbstractModule {
 	@Provides
 	@RequestScoped
 	protected Scope get(Helper helper) {
-		Scope scope = new CustomScope();
+		Scope scope = new Scope();
 		scope.put("link", helper.getLink());
 		scope.put("execute", helper.getExecute());
 
