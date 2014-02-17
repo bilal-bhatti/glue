@@ -13,30 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package com.neelo.glue.st;
+package com.neelo.glue.mustache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.inject.Inject;
 import com.neelo.glue.util.LinkBuilder;
 import com.neelo.glue.util.ObjectMapper;
 
-public class LinkTool extends Tool {
-	private final Logger log = LoggerFactory.getLogger(LinkTool.class);
+public class Link implements Function<String, String> {
+	private final Logger log = LoggerFactory.getLogger(Link.class);
 
 	private final ObjectMapper mapper;
 	private final LinkBuilder linkBuilder;
 
 	@Inject
-	public LinkTool(LinkBuilder linkBuilder, ObjectMapper mapper) {
+	public Link(LinkBuilder linkBuilder, ObjectMapper mapper) {
 		this.linkBuilder = linkBuilder;
 		this.mapper = mapper;
 	}
 
-	public String get(Object key) {
+	public String apply(String input) {
 		try {
-			return linkBuilder.link(mapper.read(key.toString())).toString();
+			return linkBuilder.link(mapper.read(input)).toString();
 		} catch (Exception e) {
 			log.error("Error encountered while looking up route", e);
 		}

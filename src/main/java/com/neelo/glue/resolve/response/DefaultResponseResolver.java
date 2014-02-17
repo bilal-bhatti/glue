@@ -5,20 +5,33 @@ import java.util.Map;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neelo.glue.Lifecycle;
+import com.neelo.glue.annotation.Mustache;
+import com.neelo.glue.mustache.RenderMustacheResponseResolution;
+import com.neelo.glue.st.RenderSTResponseResolution;
 
 @Singleton
 public class DefaultResponseResolver implements ResponseResolver {
-	private RenderSTResponseResolution renderTemplateResponse;
+	private RenderSTResponseResolution renderStringTemplateResponse;
+	private RenderMustacheResponseResolution renderMustacheResponse;
 	private RedirectResponseResolution redirectResponse;
 	private ForwardResponseResolution forwardResponse;
 
 	@Inject
-	public void setRenderTemplateResponse(RenderSTResponseResolution renderTemplateResponse) {
-		this.renderTemplateResponse = renderTemplateResponse;
+	public void setRenderMustacheResponse(RenderMustacheResponseResolution renderMustacheResponse) {
+		this.renderMustacheResponse = renderMustacheResponse;
 	}
 
-	public RenderSTResponseResolution getRenderTemplateResponse() {
-		return renderTemplateResponse;
+	public RenderMustacheResponseResolution getRenderMustacheResponse() {
+		return renderMustacheResponse;
+	}
+
+	@Inject
+	public void setRenderStringTemplateResponse(RenderSTResponseResolution renderStringTemplateResponse) {
+		this.renderStringTemplateResponse = renderStringTemplateResponse;
+	}
+
+	public RenderSTResponseResolution getRenderStringTemplateResponse() {
+		return renderStringTemplateResponse;
 	}
 
 	@Inject
@@ -43,8 +56,11 @@ public class DefaultResponseResolver implements ResponseResolver {
 	public ResponseResolution resolve(Lifecycle lifecycle) {
 		Object object = lifecycle.getResult();
 
-		if (object == null || !(object instanceof Map))
-			return getRenderTemplateResponse();
+		if (object == null || !(object instanceof Map)) {
+			if (lifecycle.getBean().getClass().isAnnotationPresent(Mustache.class))
+				return getRenderMustacheResponse();
+			return getRenderStringTemplateResponse();
+		}
 
 		Map<Object, Object> map = (Map<Object, Object>) object;
 
@@ -53,7 +69,9 @@ public class DefaultResponseResolver implements ResponseResolver {
 		} else if (map.get(ResponseResolution.forward) != null) {
 			return getForwardResponse();
 		} else {
-			return getRenderTemplateResponse();
+			if (lifecycle.getBean().getClass().isAnnotationPresent(Mustache.class))
+				return getRenderMustacheResponse();
+			return getRenderStringTemplateResponse();
 		}
 	}
 }
